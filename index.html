@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TANAW</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,600,1,0" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── MAP ── -->
+  <div id="map"></div>
+
+  <!-- ── TOP BAR ── -->
+  <div class="top-bar">
+    <div class="search-bar">
+      <span class="material-symbols-rounded search-icon">search</span>
+      <input id="searchInput" placeholder="Search location…">
+    </div>
+    <button class="top-btn points-btn" id="announceBell" onclick="openAnnouncementPanel()">
+      <span class="material-symbols-rounded">notifications</span>
+      <span id="announceBadge"></span>
+      <span id="pointsBadge" style="display:none;position:absolute;bottom:-2px;right:-2px;background:var(--primary);color:#fff;font-size:9px;font-weight:800;border-radius:50%;width:18px;height:18px;align-items:center;justify-content:center;border:1.5px solid #fff;">0</span>
+    </button>
+  </div>
+
+  <!-- ── DRRM CHIP ── -->
+  <div class="drrm-top" id="drrmChip">
+    <span class="material-symbols-rounded drrm-icon">emergency</span>
+    <span>DRRM</span>
+    <label class="switch">
+      <input type="checkbox" id="drrmToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <!-- ── FLOATING BUTTONS ── -->
+  <div class="fabs">
+    <button class="fab gps" id="gpsBtn">
+      <span class="material-symbols-rounded">my_location</span>
+    </button>
+    <button class="fab add" id="addBtn">
+      <span class="material-symbols-rounded">add</span>
+    </button>
+  </div>
+
+  <!-- ── BOTTOM SHEET ── -->
+  <div class="sheet" id="bottomSheet">
+    <div class="handle" id="sheetHandle"></div>
+
+    <div class="sheet-tabs">
+      <button class="pill active" id="tripsTab">Trips</button>
+      <button class="pill" id="incidentsTab">Incidents</button>
+    </div>
+
+    <div class="sheet-body">
+
+      <div class="sheet-section active" id="tripsIntro">
+        <p class="trip-info">See incidents along your route between two locations.</p>
+        <button class="create-trip-btn" id="createTripBtn">
+          <span class="material-symbols-rounded">directions</span> Create Trip
+        </button>
+      </div>
+
+      <div class="sheet-section" id="tripForm">
+        <div class="location-row">
+          <span class="dot start"></span>
+          <input placeholder="Start location">
+        </div>
+        <div class="location-row">
+          <span class="dot end"></span>
+          <input placeholder="Destination">
+        </div>
+        <button class="save-trip-btn">Get Route</button>
+      </div>
+
+      <div class="sheet-section" id="incidentsContent">
+        <div class="incident-search-row">
+          <div class="inc-search-wrap">
+            <span class="material-symbols-rounded" style="color:#aaa;font-size:18px">search</span>
+            <input placeholder="Search area…">
+          </div>
+          <button class="filter-btn" id="filterBtn">
+            <span class="material-symbols-rounded">filter_alt</span>
+          </button>
+        </div>
+        <div class="filter-panel" id="filterPanel">
+          <p class="filter-heading">Filter by type</p>
+          <label class="filter-item"><span>🚗 Crash</span><input type="checkbox" checked onchange="toggleType('Crash',this.checked)"></label>
+          <label class="filter-item"><span>🌊 Flood</span><input type="checkbox" checked onchange="toggleType('Flood',this.checked)"></label>
+          <label class="filter-item"><span>🔥 Fire</span><input type="checkbox" checked onchange="toggleType('Fire',this.checked)"></label>
+          <label class="filter-item"><span>🚦 Traffic</span><input type="checkbox" checked onchange="toggleType('Traffic',this.checked)"></label>
+          <label class="filter-item"><span>🚧 Roadwork</span><input type="checkbox" checked onchange="toggleType('Roadwork',this.checked)"></label>
+          <label class="filter-item drrm-only"><span>🏠 Evacuation Center</span><input type="checkbox" checked onchange="toggleType('Evacuation',this.checked)"></label>
+          <label class="filter-item drrm-only"><span>⛔ Not Passable</span><input type="checkbox" checked onchange="toggleType('NotPassable',this.checked)"></label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── BOTTOM NAV ── -->
+    <nav class="bottom-nav">
+    <a href="feed.html"><button>
+      <span class="material-symbols-rounded">dynamic_feed</span><small>Feed</small>
+    </button></a>
+    <a class="nav-center" href="index.html"><button class="nav-center-btn active">
+      <span class="material-symbols-rounded">map</span>
+      <small>Map</small>
+    </button></a>
+    <a href="more.html"><button>
+      <span class="material-symbols-rounded">more_horiz</span><small>More</small>
+    </button></a>
+  </nav>
+
+</div><!-- /.app -->
+
+
+<!-- ═══════════════════════════════════════
+     FAB SLIDE-UP SHEET
+═══════════════════════════════════════ -->
+<div id="fabSheetOverlay" class="hidden"></div>
+<div id="fabSheet">
+  <div class="fab-sheet-handle"></div>
+  <p class="fab-sheet-title">What do you want to do?</p>
+
+  <div class="fab-sheet-row" onclick="openReportModal()">
+    <div class="fab-row-icon" style="background:#fff3e0">🚧</div>
+    <div class="fab-row-text">
+      <strong>Report Incident</strong>
+      <span>Flood, crash, fire, road work & more</span>
+    </div>
+    <span class="material-symbols-rounded fab-chevron">chevron_right</span>
+  </div>
+
+  <div class="fab-sheet-row" onclick="openViolationModal()">
+    <div class="fab-row-icon" style="background:#ffebee">🚨</div>
+    <div class="fab-row-text">
+      <strong>Report Violation</strong>
+      <span>Double parking, reckless driving & more</span>
+    </div>
+    <span class="material-symbols-rounded fab-chevron">chevron_right</span>
+  </div>
+
+  <div class="fab-sheet-row" id="fabHelpRow" style="display:none" onclick="openHelpModal()">
+    <div class="fab-row-icon" style="background:#e3f2fd">🆘</div>
+    <div class="fab-row-text">
+      <strong>Request Help</strong>
+      <span>Send SOS — pinned at your GPS location</span>
+    </div>
+    <span class="material-symbols-rounded fab-chevron">chevron_right</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     ANNOUNCEMENT PANEL
+═══════════════════════════════════════ -->
+<div id="announcePanel" class="hidden overlay">
+  <div class="bottom-card">
+    <div class="bottom-card-handle"></div>
+    <div class="bottom-card-header">
+      <h3>Announcements</h3>
+      <button class="icon-btn" onclick="closeAnnouncePanel()">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div id="announceList" class="announce-list"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     MODAL 1 — INCIDENT REPORT
+═══════════════════════════════════════ -->
+<div id="reportModal" class="hidden overlay">
+  <div class="bottom-card report-card">
+    <div class="bottom-card-handle"></div>
+
+    <!-- Header -->
+    <div class="report-header">
+      <div class="report-header-left">
+        <div class="report-header-icon">🚨</div>
+        <div>
+          <div class="report-header-title">Report Incident</div>
+          <div class="report-header-sub">Tap the map first to pin location</div>
+        </div>
+      </div>
+      <button class="icon-btn" onclick="closeReport()">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+
+    <!-- Pin status indicator -->
+    <div class="pin-status" id="pinStatus">
+      <span class="material-symbols-rounded pin-status-icon">location_off</span>
+      <span id="pinStatusText">No location pinned — tap the map</span>
+    </div>
+
+    <div class="form-body">
+      <!-- Type grid -->
+      <label class="form-label">What happened?</label>
+      <div class="incident-type-grid" id="incidentTypeGrid">
+        <button class="type-card active" data-value="Roadwork" onclick="selectType(this)">
+          <span class="type-card-emoji">🚧</span>
+          <span class="type-card-label">Road Work</span>
+        </button>
+        <button class="type-card" data-value="Traffic" onclick="selectType(this)">
+          <span class="type-card-emoji">🚦</span>
+          <span class="type-card-label">Traffic</span>
+        </button>
+        <button class="type-card" data-value="Flood" onclick="selectType(this)">
+          <span class="type-card-emoji">🌊</span>
+          <span class="type-card-label">Flood</span>
+        </button>
+        <button class="type-card" data-value="Crash" onclick="selectType(this)">
+          <span class="type-card-emoji">🚗</span>
+          <span class="type-card-label">Crash</span>
+        </button>
+        <button class="type-card" data-value="Fire" onclick="selectType(this)">
+          <span class="type-card-emoji">🔥</span>
+          <span class="type-card-label">Fire</span>
+        </button>
+        <button class="type-card drrm-only" data-value="Earthquake" onclick="selectType(this)" style="display:none">
+          <span class="type-card-emoji">🌏</span>
+          <span class="type-card-label">Earthquake</span>
+        </button>
+        <button class="type-card drrm-only" data-value="Typhoon" onclick="selectType(this)" style="display:none">
+          <span class="type-card-emoji">🌀</span>
+          <span class="type-card-label">Typhoon</span>
+        </button>
+        <button class="type-card drrm-only" data-value="Landslide" onclick="selectType(this)" style="display:none">
+          <span class="type-card-emoji">🪨</span>
+          <span class="type-card-label">Landslide</span>
+        </button>
+        <button class="type-card" data-value="Others" onclick="selectType(this)">
+          <span class="type-card-emoji">✏️</span>
+          <span class="type-card-label">Others</span>
+        </button>
+      </div>
+
+      <!-- Hidden select kept for compatibility -->
+      <select id="incidentType" style="display:none">
+        <option value="Roadwork">Roadwork</option>
+        <option value="Traffic">Traffic</option>
+        <option value="Flood">Flood</option>
+        <option value="Crash">Crash</option>
+        <option value="Fire">Fire</option>
+        <option value="Earthquake">Earthquake</option>
+        <option value="Typhoon">Typhoon</option>
+        <option value="Landslide">Landslide</option>
+        <option value="Others">Others</option>
+      </select>
+
+      <!-- "Others" custom concern field — shows only when Others selected -->
+      <div id="othersConcernWrap" style="display:none;">
+        <label class="form-label">Your Concern <span style="color:var(--primary)">*</span></label>
+        <input id="othersConcern" class="form-input" placeholder="e.g. Fallen tree, stray animal, debris…" maxlength="80">
+      </div>
+
+      <!-- Description -->
+      <label class="form-label">Details <span class="optional">(optional)</span></label>
+      <textarea id="incidentNote" class="form-textarea" placeholder="Add more details about the incident…" rows="3"></textarea>
+
+      <button class="btn-primary" onclick="submitReport()">
+        <span class="material-symbols-rounded" style="font-size:18px;vertical-align:middle;margin-right:4px;">send</span>
+        Submit Report
+      </button>
+      <button class="btn-secondary" onclick="closeReport()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     MODAL 2 — VIOLATION REPORT
+═══════════════════════════════════════ -->
+<div id="violationModal" class="hidden overlay">
+  <div class="bottom-card">
+    <div class="bottom-card-handle"></div>
+    <div class="bottom-card-header">
+      <h3>Report Violation</h3>
+      <button class="icon-btn" onclick="closeViolationModal()">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-hint">Sent to the Announcements feed — no map pin.</div>
+    <div class="form-body">
+      <label class="form-label">Violation Type</label>
+      <select id="violationType" class="form-select">
+        <option value="Double Parking">🅿️ Double Parking</option>
+        <option value="Reckless Driving">💨 Reckless Driving</option>
+        <option value="Beating Red Light">🚦 Beating Red Light</option>
+        <option value="Illegal Overtaking">🚗 Illegal Overtaking</option>
+        <option value="No Helmet">🪖 No Helmet (Motorcycle)</option>
+        <option value="Overloading">📦 Overloading</option>
+        <option value="Other Violation">⚠️ Other Violation</option>
+      </select>
+      <label class="form-label">Details <span class="optional">(include plate if possible)</span></label>
+      <textarea id="violationDetails" class="form-textarea" placeholder="Describe the violation…"></textarea>
+      <label class="photo-label">
+        <span class="material-symbols-rounded">photo_camera</span>
+        Attach Photo
+        <input type="file" id="violationPhotoInput" accept="image/*" capture="environment" onchange="handleViolationPhoto(this)">
+      </label>
+      <img id="violationPhotoPreview" class="photo-preview" alt="">
+      <button class="btn-primary" onclick="submitViolation()">Submit Violation</button>
+      <button class="btn-secondary" onclick="closeViolationModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     MODAL 3 — DRRM HELP REQUEST
+═══════════════════════════════════════ -->
+<div id="helpModal" class="hidden overlay">
+  <div class="bottom-card">
+    <div class="bottom-card-handle"></div>
+    <div class="bottom-card-header">
+      <h3>Request Help</h3>
+      <button class="icon-btn" onclick="closeHelpModal()">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-hint">📍 Your current GPS location will be pinned on the map.</div>
+    <div class="form-body">
+      <label class="form-label">What do you need? <span class="required">*</span></label>
+      <textarea id="helpMessage" class="form-textarea" placeholder="Describe the help you need…"></textarea>
+      <label class="photo-label">
+        <span class="material-symbols-rounded">photo_camera</span>
+        Attach Photo <span class="optional">(optional)</span>
+        <input type="file" id="helpPhotoInput" accept="image/*" capture="environment" onchange="handleHelpPhoto(this)">
+      </label>
+      <img id="helpPhotoPreview" class="photo-preview" alt="">
+      <label class="form-label">Contact Number <span class="required">*</span></label>
+      <input type="tel" id="helpContact" class="form-input" placeholder="e.g. 09171234567">
+      <button class="btn-primary btn-danger" onclick="submitHelp()">Send Help Request</button>
+      <button class="btn-secondary" onclick="closeHelpModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     EVAC CENTER CARD
+═══════════════════════════════════════ -->
+<div id="evacCard" class="hidden evac-card">
+  <div class="evac-card-inner">
+    <div class="evac-tag">🏠 Evacuation Center</div>
+    <div class="evac-header">
+      <div>
+        <h3 id="evacCardName"></h3>
+        <p id="evacCardBarangay" class="evac-brgy"></p>
+      </div>
+      <button class="icon-btn" onclick="closeEvacCard()">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="evac-rows">
+      <div class="evac-row">
+        <span class="material-symbols-rounded evac-row-icon">location_on</span>
+        <div><div class="evac-row-label">Address</div><div id="evacCardAddress" class="evac-row-value"></div></div>
+      </div>
+      <div class="evac-row">
+        <span class="material-symbols-rounded evac-row-icon">person</span>
+        <div><div class="evac-row-label">Camp Manager</div><div id="evacCardManager" class="evac-row-value"></div></div>
+      </div>
+      <div class="evac-row">
+        <span class="material-symbols-rounded evac-row-icon">call</span>
+        <div><div class="evac-row-label">Contact</div><div id="evacCardContact" class="evac-row-value"></div></div>
+      </div>
+    </div>
+    <div class="evac-capacity">
+      <span class="material-symbols-rounded" style="color:#ef5a3c">groups</span>
+      <div>
+        <div class="evac-row-label">Capacity</div>
+        <div id="evacCardCapacity" class="evac-row-value"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     ANNOUNCEMENT PANEL
+═══════════════════════════════════════ -->
+<div id="toast"></div>
+
+<!-- Firebase SDK (compat mode) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="firebase-db.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

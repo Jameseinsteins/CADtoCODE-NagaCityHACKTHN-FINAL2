@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TANAW · More</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,600,1,0"/>
+<link rel="stylesheet" href="style.css">
+<style>
+html, body { margin:0; padding:0; } body { overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.more-app {
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  background: #f5f5f5;
+  display: block;
+  padding-bottom: 90px;
+}
+
+/* HEADER */
+.more-header {
+  background: var(--primary);
+  padding: 14px 16px 16px;
+}
+.more-header span {
+  font-size: 11px;
+  color: rgba(255,255,255,.65);
+  font-weight: 500;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+.more-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  line-height: 1.15;
+}
+
+/* APP INFO CARD */
+.app-card {
+  margin: 16px 16px 0;
+  background: #fff;
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.app-logo {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.app-info h3 { font-size: 18px; font-weight: 800; color: #1a1a1a; margin-bottom: 2px; }
+.app-info p  { font-size: 12px; color: #999; }
+.app-version {
+  margin-left: auto;
+  background: #f0f0f0;
+  border-radius: 50px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+}
+
+/* SECTION LABEL */
+.more-section-label {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .7px;
+  color: #999;
+  padding: 18px 16px 8px;
+}
+
+/* MENU GROUP */
+.menu-group {
+  margin: 0 16px;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+
+.menu-item {
+  width: 100%;
+  background: none; border: none;
+  padding: 15px 16px;
+  display: flex; align-items: center; gap: 14px;
+  font-size: 15px; font-weight: 500;
+  color: #1a1a1a;
+  cursor: pointer; font-family: inherit;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background .12s;
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item:active { background: #f9f9f9; }
+
+.menu-item-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.menu-item-icon .material-symbols-rounded { font-size: 20px; }
+
+.menu-item-text { flex: 1; }
+.menu-item-text strong { display: block; font-size: 15px; font-weight: 600; }
+.menu-item-text small  { font-size: 12px; color: #999; margin-top: 1px; display: block; }
+
+.menu-chevron .material-symbols-rounded { font-size: 18px; color: #ccc; }
+
+/* Icon colors */
+.icon-orange { background: #fff3e0; }
+.icon-orange .material-symbols-rounded { color: var(--primary); }
+.icon-red    { background: #ffebee; }
+.icon-red .material-symbols-rounded    { color: #d32f2f; }
+.icon-blue   { background: #e3f2fd; }
+.icon-blue .material-symbols-rounded   { color: #1565c0; }
+.icon-green  { background: #e8f5e9; }
+.icon-green .material-symbols-rounded  { color: #2e7d32; }
+.icon-purple { background: #f3e5f5; }
+.icon-purple .material-symbols-rounded { color: #7b1fa2; }
+.icon-grey   { background: #f5f5f5; }
+.icon-grey .material-symbols-rounded   { color: #757575; }
+
+/* DRRM SECTION (hidden by default) */
+#drrmMenus { display: none; }
+
+/* EMERGENCY MODAL */
+.emerg-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 900;
+  display: flex; align-items: flex-end;
+}
+.emerg-overlay.hidden { display: none; }
+
+.emerg-card {
+  background: #fff;
+  width: 100%;
+  border-radius: 24px 24px 0 0;
+  padding: 20px 20px 40px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.15);
+}
+.emerg-handle {
+  width: 36px; height: 4px;
+  background: #e0e0e0; border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.emerg-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+.emerg-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.emerg-row:last-child { border-bottom: none; }
+.emerg-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: #ffebee;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.emerg-icon .material-symbols-rounded { font-size: 22px; color: #d32f2f; }
+.emerg-info strong { display: block; font-size: 14px; font-weight: 600; }
+.emerg-info span   { font-size: 13px; color: #d32f2f; font-weight: 700; }
+.emerg-call {
+  margin-left: auto;
+  background: #d32f2f; color: #fff;
+  border: none; border-radius: 50px;
+  padding: 8px 16px; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; gap: 4px;
+}
+.emerg-call .material-symbols-rounded { font-size: 16px; }
+
+/* DRRM INFO MODAL */
+.drrm-info-card {
+  background: #fff;
+  width: 100%;
+  border-radius: 24px 24px 0 0;
+  padding: 20px 20px 40px;
+}
+.drrm-info-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 14px; }
+.drrm-tip {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 14px; color: #333; line-height: 1.5;
+}
+.drrm-tip:last-child { border-bottom: none; }
+.drrm-tip-num {
+  width: 28px; height: 28px;
+  background: var(--primary); color: #fff;
+  border-radius: 50%; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0; margin-top: 1px;
+}
+</style>
+</head>
+
+<body>
+<div class="more-app">
+
+  <!-- HEADER -->
+  <div class="more-header">
+    <span>TANAW</span>
+    <h2>Menu</h2>
+  </div>
+
+  <!-- APP CARD -->
+  <div class="app-card">
+    <div class="app-logo"> <img src="applogo.jpg" alt="logo"> </div>
+    <div class="app-info">
+      <h3>TANAW</h3>
+      <p>Community Traffic &amp; Disaster Map</p>
+    </div>
+    <div class="app-version">v1.12</div>
+  </div>
+
+  <!-- POINTS CARD -->
+  <div style="margin:12px 16px 0;background:linear-gradient(135deg,#ef5a3c,#c94626);border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(239,90,60,.3);">
+    <span class="material-symbols-rounded" style="font-size:36px;color:#fff;">emoji_events</span>
+    <div style="flex:1;">
+      <div style="font-size:11px;color:rgba(255,255,255,.75);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Your Reporter Points</div>
+      <div style="font-size:36px;font-weight:800;color:#fff;line-height:1.1;" id="morePointsNum">0</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px;">Earned by having reports verified</div>
+    </div>
+  </div>
+
+  <!-- GENERAL -->
+  <div class="more-section-label">General</div>
+  <div class="menu-group">
+    <button class="menu-item" onclick="openEmergencyModal()">
+      <div class="menu-item-icon icon-red">
+        <span class="material-symbols-rounded">call</span>
+      </div>
+      <div class="menu-item-text">
+        <strong>Emergency Numbers</strong>
+        <small>911, NDRRMC, local contacts</small>
+      </div>
+      <div class="menu-chevron"><span class="material-symbols-rounded">chevron_right</span></div>
+    </button>
+
+    <button class="menu-item" onclick="window.location.href='admin.html'">
+      <div class="menu-item-icon icon-orange">
+        <span class="material-symbols-rounded">admin_panel_settings</span>
+      </div>
+      <div class="menu-item-text">
+        <strong>Admin Dashboard</strong>
+        <small>Review &amp; verify incident reports</small>
+      </div>
+      <div class="menu-chevron"><span class="material-symbols-rounded">chevron_right</span></div>
+    </button>
+
+    <button class="menu-item" onclick="resetAllData()">
+      <div class="menu-item-icon icon-grey">
+        <span class="material-symbols-rounded">refresh</span>
+      </div>
+      <div class="menu-item-text">
+        <strong>Reset All Data</strong>
+        <small>Clear all reports and incidents</small>
+      </div>
+      <div class="menu-chevron"><span class="material-symbols-rounded">chevron_right</span></div>
+    </button>
+  </div>
+
+  <!-- DRRM SECTION (shown when DRRM is on) -->
+  <div id="drrmMenus">
+    <div class="more-section-label">🚨 DRRM Resources</div>
+    <div class="menu-group">
+      <button class="menu-item" onclick="openDrrmInfo()">
+        <div class="menu-item-icon icon-orange">
+          <span class="material-symbols-rounded">health_and_safety</span>
+        </div>
+        <div class="menu-item-text">
+          <strong>DRRM Guidelines</strong>
+          <small>What to do during a calamity</small>
+        </div>
+        <div class="menu-chevron"><span class="material-symbols-rounded">chevron_right</span></div>
+      </button>
+
+      <button class="menu-item" onclick="alert('Navigate to Map tab and enable DRRM to see Evacuation Centers near you.')">
+        <div class="menu-item-icon icon-blue">
+          <span class="material-symbols-rounded">location_on</span>
+        </div>
+        <div class="menu-item-text">
+          <strong>Evacuation Centers</strong>
+          <small>View on map — enable DRRM mode</small>
+        </div>
+        <div class="menu-chevron"><span class="material-symbols-rounded">chevron_right</span></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="more-section-label">About</div>
+  <div class="menu-group">
+    <button class="menu-item" onclick="alert('TANAW is a community-powered traffic and disaster awareness app for Naga City, Camarines Sur.')">
+      <div class="menu-item-icon icon-purple">
+        <span class="material-symbols-rounded">info</span>
+      </div>
+      <div class="menu-item-text">
+        <strong>About TANAW</strong>
+        <small>Community traffic &amp; disaster map</small>
+      </div>
+      <div class="menu-chevron"><span class="material-symbols-rounded">chevron_right</span></div>
+    </button>
+  </div>
+
+  <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+    <a href="feed.html"><button>
+      <span class="material-symbols-rounded">dynamic_feed</span><small>Feed</small>
+    </button></a>
+    <a class="nav-center" href="index.html"><button class="nav-center-btn">
+      <span class="material-symbols-rounded">map</span>
+      <small>Map</small>
+    </button></a>
+    <a href="more.html"><button class="active">
+      <span class="material-symbols-rounded">more_horiz</span><small>More</small>
+    </button></a>
+  </nav>
+
+</div>
+
+<!-- EMERGENCY MODAL -->
+<div class="emerg-overlay hidden" id="emergModal">
+  <div class="emerg-card">
+    <div class="emerg-handle"></div>
+    <h3>📞 Emergency Numbers</h3>
+    <div class="emerg-row">
+      <div class="emerg-icon"><span class="material-symbols-rounded">local_police</span></div>
+      <div class="emerg-info"><strong>National Emergency</strong><span>911</span></div>
+      <button class="emerg-call" onclick="window.location.href='tel:911'">
+        <span class="material-symbols-rounded">call</span> Call
+      </button>
+    </div>
+    <div class="emerg-row">
+      <div class="emerg-icon"><span class="material-symbols-rounded">emergency</span></div>
+      <div class="emerg-info"><strong>NDRRMC</strong><span>(02) 8911-5061</span></div>
+      <button class="emerg-call" onclick="window.location.href='tel:0289115061'">
+        <span class="material-symbols-rounded">call</span> Call
+      </button>
+    </div>
+    <div class="emerg-row">
+      <div class="emerg-icon"><span class="material-symbols-rounded">local_fire_department</span></div>
+      <div class="emerg-info"><strong>BFP Naga</strong><span>(054) 473-9999</span></div>
+      <button class="emerg-call" onclick="window.location.href='tel:054-4739999'">
+        <span class="material-symbols-rounded">call</span> Call
+      </button>
+    </div>
+    <div class="emerg-row">
+      <div class="emerg-icon"><span class="material-symbols-rounded">medical_services</span></div>
+      <div class="emerg-info"><strong>Red Cross Naga</strong><span>(054) 472-1629</span></div>
+      <button class="emerg-call" onclick="window.location.href='tel:054-4721629'">
+        <span class="material-symbols-rounded">call</span> Call
+      </button>
+    </div>
+    <button class="btn-secondary" style="width:100%;margin-top:16px;padding:13px;border-radius:14px;border:none;background:#f0f0f0;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="closeEmergencyModal()">Close</button>
+  </div>
+</div>
+
+<!-- DRRM INFO MODAL -->
+<div class="emerg-overlay hidden" id="drrmInfoModal">
+  <div class="emerg-card drrm-info-card">
+    <div class="emerg-handle"></div>
+    <h3>🛡️ DRRM Guidelines</h3>
+    <div class="drrm-tip">
+      <div class="drrm-tip-num">1</div>
+      <div>Stay calm and listen to official announcements from local government.</div>
+    </div>
+    <div class="drrm-tip">
+      <div class="drrm-tip-num">2</div>
+      <div>Evacuate immediately when ordered. Don't wait for the water to rise.</div>
+    </div>
+    <div class="drrm-tip">
+      <div class="drrm-tip-num">3</div>
+      <div>Go to the nearest Evacuation Center shown on the TANAW map.</div>
+    </div>
+    <div class="drrm-tip">
+      <div class="drrm-tip-num">4</div>
+      <div>Bring essential documents, medicines, and 3-day food supply.</div>
+    </div>
+    <div class="drrm-tip">
+      <div class="drrm-tip-num">5</div>
+      <div>Use the TANAW SOS feature to request help if you are stranded.</div>
+    </div>
+    <button class="btn-secondary" style="width:100%;margin-top:16px;padding:13px;border-radius:14px;border:none;background:#f0f0f0;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="closeDrrmInfo()">Close</button>
+  </div>
+</div>
+
+<script src="more.js"></script>
+<script>
+  // Show points on load
+  const morePointsEl = document.getElementById("morePointsNum");
+  if (morePointsEl) morePointsEl.textContent = localStorage.getItem("tanaw_points") || "0";
+</script>
+</body>
+</html>
